@@ -5,6 +5,8 @@ project(PCDataGen)
 set(SRC_FILES 
 	
 	main.cpp 
+	context.cpp
+	image.cpp
 		
 	PARENT_SCOPE)
 

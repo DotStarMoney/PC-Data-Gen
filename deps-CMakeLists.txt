@@ -17,7 +17,7 @@ ExternalProject_Add (
 
 	
 file(DOWNLOAD
-	"https://github.com/nothings/stb/blob/master/stb_image.h"
+	"https://raw.githubusercontent.com/nothings/stb/master/stb_image.h"
 	"Source/STB_IMAGE_EX/stb_image.h"
 	SHOW_PROGRESS)
 

@@ -1,0 +1,3 @@
+- fill out context changed functions
+- fill out graphics functions
+- test graphics functions

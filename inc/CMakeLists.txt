@@ -4,7 +4,15 @@ project(PCDataGen)
 
 set(HDR_FILES 
 	
-	blank.h
+	body.h
+	context.h
+	gfxfunctions.h
+	image.h
+	noncopyable.h
+	parameter.h
+	SDL_stbimage.h
+	term.h
+	vec2.h
 	
 	PARENT_SCOPE)
 
