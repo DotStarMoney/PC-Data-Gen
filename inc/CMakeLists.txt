@@ -13,6 +13,8 @@ set(HDR_FILES
 	SDL_stbimage.h
 	term.h
 	vec2.h
+	parameter_ro.h
+	pixel32.h
 	
 	PARENT_SCOPE)
 

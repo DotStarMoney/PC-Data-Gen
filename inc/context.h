@@ -14,8 +14,8 @@ namespace pc
 		Context();
 		~Context();
 		void sync();
+		void set_size(size_t _w, size_t _h);
 		
-
 	struct Default
 	{
 		static const size_t width = 640;

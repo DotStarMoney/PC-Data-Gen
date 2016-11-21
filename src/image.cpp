@@ -21,6 +21,10 @@ namespace pc
 	void Image::construct()
 	{
 		surface = nullptr;
+		pitch.P_ASSIGN(&Image::pitch_read);
+		data.P_ASSIGN(&Image::data_read);
+		width.P_ASSIGN(&Image::width_read);
+		height.P_ASSIGN(&Image::height_read);
 	}
 	Image::Image()
 	{
@@ -35,12 +39,13 @@ namespace pc
 	{
 		clear();
 		surface = SDL_CreateRGBSurface(
-			0, 
-			_width, 
-			_height, 
+			0,
+			_width,
+			_height,
 			32,
 			rmask, gmask, bmask, amask);
-		if(!surface) throw std::runtime_error("Failed to create image.");
+		SDL_SetSurfaceRLE(surface, 1);
+		if (!surface) throw std::runtime_error("Failed to create image.");
 	}
 	Image::~Image()
 	{
@@ -52,12 +57,34 @@ namespace pc
 		clear();
 		surface = STBIMG_Load(_file.c_str());
 		if (!surface) throw std::runtime_error("Failed to load image.");
+		SDL_SetSurfaceRLE(surface, 1);
 	}
-	
+
 	void Image::clear()
 	{
 		if (surface) SDL_FreeSurface(surface);
 		surface = nullptr;
 	}
 
+	void Image::pitch_read()
+	{
+		if(!surface) throw std::runtime_error("No image.");
+		pitch = surface->pitch;
+	}
+	void Image::data_read()
+	{
+		if (!surface) throw std::runtime_error("No image.");
+		SDL_SetSurfaceRLE(surface, 0);
+		data = surface->pixels;
+	}
+	void Image::width_read()
+	{
+		if (!surface) throw std::runtime_error("No image.");
+		width = surface->w;
+	}
+	void Image::height_read()
+	{
+		if (!surface) throw std::runtime_error("No image.");
+		height = surface->h;
+	}
 }

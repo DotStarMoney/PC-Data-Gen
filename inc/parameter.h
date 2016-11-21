@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef P_ASSIGN
+#define P_ASSIGN(_X_) assign(this, _X_)
+#endif 
+
 namespace pc
 {
 	template <typename T, typename C>
