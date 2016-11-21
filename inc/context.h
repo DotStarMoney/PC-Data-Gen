@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include "noncopyable.h"
 #include "parameter.h"
+#include "image.h"
 
 struct SDL_Window;
 namespace pc
@@ -12,8 +13,9 @@ namespace pc
 	public:
 		NONCOPYABLE(Context)
 		Context();
+		Context(size_t _w, size_t _h, bool _fullscreen = false);
 		~Context();
-		void sync();
+		void sync(const Image& _img);
 		void set_size(size_t _w, size_t _h);
 		
 	struct Default
@@ -30,6 +32,7 @@ namespace pc
 		Parameter<bool, Context> fullscreen;
 	private:
 		SDL_Window* window;
+		void construct();
 		void fullscreen_changed(bool _fullscreen);
 		void title_changed(char* _title);
 		void width_changed(size_t _width);

@@ -344,8 +344,8 @@ namespace pc
 			{
 				fill_r.x = (int)_s.x;
 				fill_r.y = (int)_s.y;
-				fill_r.w = (int)abs(dt.x);
-				fill_r.h = (int)abs(dt.y);
+				fill_r.w = (int)abs(dt.x) + 1;
+				fill_r.h = (int)abs(dt.y) + 1;
 				SDL_FillRect(_image.surface, &fill_r, _col.value);
 			}
 		}
@@ -357,32 +357,313 @@ namespace pc
 			CircleCode _code,
 			Pixel32 _col)
 		{
+#define LOW_P_PI 3.141593
+#define LOW_P_HPI 1.570797
+			int r;
+			int i;
+			int xi;
+			int yi;
+			int ly;
+			int lx;
+			int llx;
+			int oy;
+			int ox;
+			int olx;
+			int lxi;
+			int w;
+			int h;
+			int xs;
+			int xe;
+			int pitch;
+			int offset;
+			int mp;
+			void* d;
+			float x_p;
+			float a;
+			float a_d;
+			w = _image.width;
+			h = _image.height;
+			d = _image.data;
+			pitch = _image.pitch;
+			r = (int)_r;
+			a_d = 1.0 / _r;
+			a = 0;
+			ly = (int)_p.y - _r;
+			lx = (int)_p.x;
+			if (_p.x + _r < 0.0) return;
+			if (_p.x - _r >= (float) w) return;
+			if (_p.y + _r < 0.0) return;
+			if (_p.y - _r >= (float)h) return;
+			if (_code == CircleCode::L)
+			{
+				while (a < LOW_P_HPI)
+				{
+					x_p = sin(a) * _r;
+					lxi = (int)_p.x - x_p;
+					xi = (int)_p.x + x_p;
+					yi = (int)(_p.y - cos(a) * _r);
+					if (yi != ly)
+					{
+						if (ly > 0)
+						{
+							mp = ly * pitch;
+							xs = lx;
+							xe = ox;
+							if ((xe > 0) && (xs < w))
+							{
+								xs = xs < 0 ? 0 : xs;
+								xe = xe >= w ? w - 1 : xe;
+								offset = xs * 4 + mp;
+								while (xs <= xe)
+								{
+									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									offset += 4;
+									xs++;
+								}
+							}
+							xs = ox;
+							xe = llx;
+							if ((xe > 0) && (xs < w))
+							{
+								xs = xs < 0 ? 0 : xs;
+								xe = xe >= w ? w - 1 : xe;
+								offset = xs * 4 + ly * mp;
+								while (xs <= xe)
+								{
+									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									offset += 4;
+									xs++;
+								}
+							}
 
+						}
+						if (yi >= h) return;
+						lx = xi;
+						llx = lxi;
+						ly = yi;
+					}
+					ox = xi;
+					olx = lxi;
+					oy = yi;
+					a = a_d * i;
+					i++;
+				}
+				while (a < LOW_P_PI)
+				{
+					x_p = sin(a) * _r;
+					lxi = (int)_p.x - x_p;
+					xi = (int)_p.x + x_p;
+					yi = (int)(_p.y - cos(a) * _r);
+					if (yi != ly)
+					{
+						if (ly > 0)
+						{
+							mp = ly * pitch;
+							xs = ox;
+							xe = lx;
+							if ((xe > 0) && (xs < w))
+							{
+								xs = xs < 0 ? 0 : xs;
+								xe = xe >= w ? w - 1 : xe;
+								offset = xs * 4 + mp;
+								while (xs <= xe)
+								{
+									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									offset += 4;
+									xs++;
+								}
+							}
+							xs = llx;
+							xe = ox;
+							if ((xe > 0) && (xs < w))
+							{
+								xs = xs < 0 ? 0 : xs;
+								xe = xe >= w ? w - 1 : xe;
+								offset = xs * 4 + ly * mp;
+								while (xs <= xe)
+								{
+									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									offset += 4;
+									xs++;
+								}
+							}
+						}
+						if (yi >= h) return;
+						lx = xi;
+						llx = lxi;
+						ly = yi;
+					}
+					ox = xi;
+					olx = lxi;
+					oy = yi;
+					a = a_d * i;
+					i++;
+				}
+			}
+			else
+			{
+				while (a < LOW_P_HPI)
+				{
+					x_p = sin(a) * _r;
+					lxi = (int)_p.x - x_p;
+					xi = (int)_p.x + x_p;
+					yi = (int)(_p.y - cos(a) * _r);
+					if (yi != ly)
+					{
+						if (ly > 0)
+						{
+							mp = ly * pitch;
+							xs = olx;
+							xe = ox;
+							if ((xe > 0) && (xs < w))
+							{
+								xs = xs < 0 ? 0 : xs;
+								xe = xe >= w ? w - 1 : xe;
+								offset = xs * 4 + mp;
+								while (xs <= xe)
+								{
+									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									offset += 4;
+									xs++;
+								}
+							}
+						}
+						if (yi >= h) return;
+						lx = xi;
+						llx = lxi;
+						ly = yi;
+					}
+					ox = xi;
+					olx = lxi;
+					oy = yi;
+					a = a_d * i;
+					i++;
+				}
+				while (a < LOW_P_PI)
+				{
+					x_p = sin(a) * _r;
+					lxi = (int)_p.x - x_p;
+					xi = (int)_p.x + x_p;
+					yi = (int)(_p.y - cos(a) * _r);
+					if (yi != ly)
+					{
+						if (ly > 0)
+						{
+							mp = ly * pitch;
+							xs = llx;
+							xe = lx;
+							if ((xe > 0) && (xs < w))
+							{
+								xs = xs < 0 ? 0 : xs;
+								xe = xe >= w ? w - 1 : xe;
+								offset = xs * 4 + mp;
+								while (xs <= xe)
+								{
+									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									offset += 4;
+									xs++;
+								}
+							}
+						}
+						if (yi >= h) return;
+						lx = xi;
+						llx = lxi;
+						ly = yi;
+					}
+					ox = xi;
+					olx = lxi;
+					oy = yi;
+					a = a_d * i;
+					i++;
+				}
+			}
+			xs = llx;
+			xe = lx;
+			if ((xe > 0) && (xs < w))
+			{
+				xs = xs < 0 ? 0 : xs;
+				xe = xe >= w ? w - 1 : xe;
+				offset = xs * 4 + ly * mp;
+				while (xs <= xe)
+				{
+					*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+					offset += 4;
+					xs++;
+				}
+			}
 		}
+		
 		void put(
-			const Image& _dest,
+			Image& _dest,
 			vec2 _p,
-			const Image& _src,
+			Image& _src,
 			MethodCode _method,
 			ivec2 _src_s,
 			ivec2 _src_e,
-			Pixel32 _trans_col)
+			uint8_t _alpha)
 		{
-
+			SDL_Rect source_r;
+			SDL_Rect dest_r;
+			if (_dest.empty() || _src.empty())
+			{
+				throw std::runtime_error("No image.");
+			}
+			if (_method == MethodCode::NONE)
+			{
+				SDL_SetSurfaceBlendMode(_src.surface, SDL_BLENDMODE_NONE);
+			}
+			else if (_method == MethodCode::ALPHA)
+			{
+				SDL_SetSurfaceBlendMode(_src.surface, SDL_BLENDMODE_BLEND);
+				SDL_SetSurfaceAlphaMod(_src.surface, _alpha);
+			}
+			else if (_method == MethodCode::ADD)
+			{
+				SDL_SetSurfaceBlendMode(_src.surface, SDL_BLENDMODE_ADD);
+			}
+			else if (_method == MethodCode::MIX)
+			{
+				SDL_SetSurfaceBlendMode(_src.surface, SDL_BLENDMODE_MOD);
+			}
+			if (_src_s.x < 0)
+			{
+				source_r.x = 0;
+				source_r.y = 0;
+				source_r.w = _src.width;
+				source_r.h = _src.height;
+			}
+			else
+			{
+				source_r.x = _src_e.x;
+				source_r.y = _src_e.y;
+				source_r.w = abs(_src_e.x - _src_s.x) + 1;
+				source_r.h = abs(_src_e.y - _src_s.y) + 1;
+			}
+			dest_r.x = (int)_p.x;
+			dest_r.y = (int)_p.y;
+			dest_r.w = source_r.w;
+			dest_r.h = source_r.h;
+			SDL_BlitSurface(_dest.surface, &dest_r, _src.surface, &source_r);
 		}
 		void putf(
-			const Image& _dest,
+			Image& _dest,
 			vec2 _p,
-			const Image& _src,
+			Image& _src,
 			MethodCode _method,
 			ivec2 _src_s,
 			ivec2 _src_e,
-			Pixel32 _trans_col)
+			uint8_t _alpha)
 		{
+			if (_dest.empty() || _src.empty())
+			{
+				throw std::runtime_error("No image.");
+			}
+			// 
+
 
 		}
 		void draw_text(
-			const Image& _dest,
+			Image& _dest,
 			vec2 _p,
 			std::string _text,
 			Pixel32 _col)

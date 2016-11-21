@@ -9,6 +9,7 @@ namespace pc
 	template <typename T, typename C>
 	class Parameter
 	{
+		friend class Image;
 		friend class Context;
 	public:
 		Parameter() { has_assignment = false; }
@@ -17,20 +18,38 @@ namespace pc
 		Parameter(const Parameter&) = delete;
 		Parameter& operator=(Parameter<T, C>& _val)
 		{
-			if (has_assignment) (class_->*func)(_val);
-			value = _val.value;
+			if (has_assignment)
+			{
+				(class_->*func)(_val.value);
+			}
+			else
+			{
+				value = _val.value;
+			}
 			return *this;
 		}
 		Parameter& operator=(T& _val)
 		{
-			if (has_assignment) (class_->*func)(_val);
-			value = _val;
+			if (has_assignment)
+			{
+				(class_->*func)(_val);
+			}
+			else
+			{
+				value = _val;
+			}
 			return *this;
 		}
 		Parameter& operator=(const T& _val)
 		{
-			if (has_assignment) (class_->*func)(_val);
-			value = _val;
+			if (has_assignment)
+			{
+				(class_->*func)(_val);
+			}
+			else
+			{
+				value = _val;
+			}
 			return *this;
 		}
 		operator T() const { return value; }

@@ -3,6 +3,7 @@
 
 union Pixel32
 {
+	Pixel32() {}
 	Pixel32(uint32_t _v) { value = _v; }
 	Pixel32(
 		unsigned char _r,

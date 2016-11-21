@@ -21,6 +21,10 @@ namespace pc
 	void Image::construct()
 	{
 		surface = nullptr;
+		colorkey = 0xffff00ff;
+		explicit_keying = false;
+		enabled_keying = false;
+		colorkey.P_ASSIGN(&Image::colorkey_changed);
 		pitch.P_ASSIGN(&Image::pitch_read);
 		data.P_ASSIGN(&Image::data_read);
 		width.P_ASSIGN(&Image::width_read);
@@ -37,6 +41,7 @@ namespace pc
 	}
 	Image::Image(size_t _width, size_t _height)
 	{
+		construct();
 		clear();
 		surface = SDL_CreateRGBSurface(
 			0,
@@ -87,4 +92,28 @@ namespace pc
 		if (!surface) throw std::runtime_error("No image.");
 		height = surface->h;
 	}
+	void Image::colorkey_changed(Pixel32 _col)
+	{
+		colorkey.value = _col;
+		if (!surface) throw std::runtime_error("No image.");
+		if (explicit_keying)
+		{
+			SDL_SetColorKey(surface, enabled_keying, _col.value);
+		}
+		else
+		{
+			SDL_SetColorKey(surface, true, _col.value);
+		}
+	}
+	void Image::enable_colorkey(bool _enable)
+	{
+		explicit_keying = true;
+		enabled_keying = _enable;
+	}
+	bool Image::empty()
+	{
+		if (surface) return false;
+		return true;
+	}
+
 }
