@@ -5,7 +5,7 @@
 #include "parameter_ro.h"
 #include "parameter.h"
 #include <stdint.h>
-#include "pixel32.h"
+#include "color32.h"
 #include "gfxfunctions.h"
 
 struct SDL_Surface;
@@ -14,28 +14,28 @@ namespace pc
 
 	class Image
 	{
-		friend void gfx::cls(const Image& _image, Pixel32 _col);
+		friend void gfx::cls(const Image& _image, Color32 _col);
 		friend void gfx::line(
 			const Image& _image,
 			vec2 _s,
 			vec2 _e,
-			LineCode _code,
-			Pixel32 _col);
+			Color32 _col,
+			LineCode _code);
 		friend void gfx::put(
 			Image& _dest,
 			vec2 _p,
 			Image& _src,
 			MethodCode _method,
-			ivec2 _src_s,
-			ivec2 _src_e,
+			vec2 _src_s,
+			vec2 _src_e,
 			uint8_t _alpha);
 		friend void gfx::putf(
 			Image& _dest,
 			vec2 _p,
 			Image& _src,
 			MethodCode _method,
-			ivec2 _src_s,
-			ivec2 _src_e,
+			vec2 _src_s,
+			vec2 _src_e,
 			uint8_t _alpha);
 		friend Context;
 	public:
@@ -47,8 +47,9 @@ namespace pc
 		void load(const std::string& _file);
 		void enable_colorkey(bool _enable);
 		bool empty();
+		void compress();
 	public:
-		Parameter<Pixel32, Image> colorkey;
+		Parameter<Color32, Image> colorkey;
 		Parameter_RO<size_t, Image> pitch;
 		Parameter_RO<void*, Image> data;
 		Parameter_RO<size_t, Image> width;
@@ -56,14 +57,16 @@ namespace pc
 	private:
 		void construct();
 		void clear();
-		void colorkey_changed(Pixel32 _col);
+		void colorkey_changed(Color32 _col);
 		void pitch_read();
 		void data_read();
 		void width_read();
 		void height_read();
+		void* get_raw_data();
 	private:
 		bool explicit_keying;
 		bool enabled_keying;
+		bool is_rle;
 		SDL_Surface* surface;
 	};
 

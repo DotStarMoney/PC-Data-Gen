@@ -24,6 +24,7 @@ namespace pc
 		colorkey = 0xffff00ff;
 		explicit_keying = false;
 		enabled_keying = false;
+		is_rle = false;
 		colorkey.P_ASSIGN(&Image::colorkey_changed);
 		pitch.P_ASSIGN(&Image::pitch_read);
 		data.P_ASSIGN(&Image::data_read);
@@ -49,8 +50,10 @@ namespace pc
 			_height,
 			32,
 			rmask, gmask, bmask, amask);
-		SDL_SetSurfaceRLE(surface, 1);
 		if (!surface) throw std::runtime_error("Failed to create image.");
+		SDL_SetSurfaceRLE(surface, 1);
+		is_rle = true;
+		SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 	}
 	Image::~Image()
 	{
@@ -63,6 +66,8 @@ namespace pc
 		surface = STBIMG_Load(_file.c_str());
 		if (!surface) throw std::runtime_error("Failed to load image.");
 		SDL_SetSurfaceRLE(surface, 1);
+		is_rle = true;
+		SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 	}
 
 	void Image::clear()
@@ -80,6 +85,7 @@ namespace pc
 	{
 		if (!surface) throw std::runtime_error("No image.");
 		SDL_SetSurfaceRLE(surface, 0);
+		is_rle = false;
 		data = surface->pixels;
 	}
 	void Image::width_read()
@@ -92,7 +98,7 @@ namespace pc
 		if (!surface) throw std::runtime_error("No image.");
 		height = surface->h;
 	}
-	void Image::colorkey_changed(Pixel32 _col)
+	void Image::colorkey_changed(Color32 _col)
 	{
 		colorkey.value = _col;
 		if (!surface) throw std::runtime_error("No image.");
@@ -115,5 +121,16 @@ namespace pc
 		if (surface) return false;
 		return true;
 	}
+	void Image::compress()
+	{
+		if (!surface) throw std::runtime_error("No image.");
+		SDL_SetSurfaceRLE(surface, 1);
+		is_rle = true;
+	}
 
+	void* Image::get_raw_data()
+	{
+		if (!surface) throw std::runtime_error("No image.");
+		return data.value;
+	}
 }

@@ -1,8 +1,13 @@
 #pragma once
+#define TP1_2(x, y) x ## y
+#define TP2_2(x, y) TP1_2(x, y)
 
-#define CALL_ON_TERMINATION(_X_) GlobalScopeExecutor EXEC##__COUNTER__(nullptr, _X_);
-#define CALL_ON_START(_X_) GlobalScopeExecutor EXEC##__COUNTER__(_X_, nullptr);
-#define CALL_ON_BOUNDS(_X_, _Y_) GlobalScopeExecutor EXEC##__COUNTER__(_X_, _Y_);
+#define CALL_ON_TERMINATION(_W_, _X_) \
+	GlobalScopeExecutor TP2_2(_W_, __COUNTER__)(nullptr, _X_)
+#define CALL_ON_START(_W_, _X_) \
+	GlobalScopeExecutor TP2_2(_W_, __COUNTER__)(_X_, nullptr)
+#define CALL_ON_BOUNDS(_W_, _X_, _Y_) \
+	GlobalScopeExecutor TP2_2(_W_, __COUNTER__)(_X_, _Y_)
 
 class GlobalScopeExecutor
 {

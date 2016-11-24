@@ -14,7 +14,8 @@ set(HDR_FILES
 	term.h
 	vec2.h
 	parameter_ro.h
-	pixel32.h
+	color32.h
+	utility.h
 	
 	PARENT_SCOPE)
 

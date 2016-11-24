@@ -12,6 +12,40 @@ namespace pc
 {
 	namespace gfx
 	{
+		bool any_clip(
+			vec2 _p,
+			vec2 _s,
+			vec2 _dlb,
+			vec2 _dhb,
+			vec2& _dp,
+			vec2& _clb,
+			vec2& _chb)
+		{
+			vec2 p1;
+			vec2 p2;
+			vec2 bb1;
+			vec2 bb2;
+
+			p1 = _p;
+			p2 = p1 + _s;
+			
+			if (p2.x <= _dlb.x) return false;
+			if (p1.x >= _dhb.x) return false;
+			if (p2.y <= _dlb.y) return false;
+			if (p1.y >= _dhb.y) return false;
+
+			bb1.x = p1.x < _dlb.x ? _dlb.x : p1.x;
+			bb1.y = p1.y < _dlb.y ? _dlb.y : p1.y;
+			bb2.x = p2.x > _dhb.x ? _dhb.x : p2.x;
+			bb2.y = p2.y > _dhb.y ? _dhb.y : p2.y;
+
+			_dp = bb1;
+			_clb = bb1 - p1;
+			_chb = _s - (p2 - bb2);
+
+			return true;
+		}
+
 		int get_code(float _x, float _y, float _w, float _h) 
 		{
 			int code;
@@ -158,7 +192,7 @@ namespace pc
 			float _xe,
 			float _w,
 			float _h,
-			Pixel32 _col)
+			Color32 _col)
 		{
 			int xi;
 			int yi;
@@ -177,7 +211,7 @@ namespace pc
 			offset = xi * 4 + yi * _pitch;
 			while (xi <= xend)
 			{
-				*((Pixel32*)&((uint8_t*)_d)[offset]) = _col;
+				*((Color32*)&((uint8_t*)_d)[offset]) = _col;
 				offset += 4;
 				xi++;
 			}
@@ -190,7 +224,7 @@ namespace pc
 			float _ye,
 			float _w,
 			float _h,
-			Pixel32 _col)
+			Color32 _col)
 		{
 			int xi;
 			int yi;
@@ -209,18 +243,18 @@ namespace pc
 			offset = xi * 4 + yi * _pitch;
 			while (yi <= yend)
 			{
-				*((Pixel32*)&((uint8_t*)_d)[offset]) = _col;
+				*((Color32*)&((uint8_t*)_d)[offset]) = _col;
 				offset += _pitch;
 				yi++;
 			}
 		}
 
 
-		void cls(const Image& _image, Pixel32 _col)
+		void cls(const Image& _image, Color32 _col)
 		{
 			SDL_FillRect(_image.surface, NULL, _col.value);
 		}
-		void pset(const Image& _image, vec2 _p, Pixel32 _col)
+		void pset(const Image& _image, vec2 _p, Color32 _col)
 		{
 			int x;
 			int y;
@@ -232,10 +266,10 @@ namespace pc
 				(x >= _image.width) ||
 				(y >= _image.height)) return;
 			d = _image.data;
-			*((Pixel32*) &((uint8_t*)d)[x * 4 + y*_image.pitch]) = _col;
+			*((Color32*) &((uint8_t*)d)[x * 4 + y*_image.pitch]) = _col;
 		}
 
-		Pixel32 point(const Image& _image, vec2 _p)
+		Color32 point(const Image& _image, vec2 _p)
 		{
 			int x;
 			int y;
@@ -247,22 +281,19 @@ namespace pc
 				(x >= _image.width) ||
 				(y >= _image.height)) return -1;
 			d = _image.data;
-			return *((Pixel32*)&((uint8_t*)d)[x * 4 + y*_image.pitch]);
+			return *((Color32*)&((uint8_t*)d)[x * 4 + y*_image.pitch]);
 		}
 		void line(
 			const Image& _image,
 			vec2 _s,
 			vec2 _e,
-			LineCode _code,
-			Pixel32 _col)
+			Color32 _col,
+			LineCode _code)
 		{
 			int w;
 			int h;
 			int xi;
 			int yi;
-			int yend;
-			int xend;
-			int offset;
 			int pitch;
 			float slope;
 			void* d;
@@ -305,7 +336,7 @@ namespace pc
 							{
 								xi = (int)_s.x;
 								yi = (int)_s.y;
-								*((Pixel32*)&((uint8_t*)d)
+								*((Color32*)&((uint8_t*)d)
 									[xi * 4 + yi*_image.pitch]) = _col;
 								_s.x += 1;
 								_s.y += slope;
@@ -318,7 +349,7 @@ namespace pc
 							{
 								xi = (int)_s.x;
 								yi = (int)_s.y;
-								*((Pixel32*)&((uint8_t*)d)
+								*((Color32*)&((uint8_t*)d)
 									[xi * 4 + yi*_image.pitch]) = _col;
 								_s.x += slope;
 								_s.y += 1;
@@ -326,7 +357,7 @@ namespace pc
 						}
 						xi = (int)_e.x;
 						yi = (int)_e.y;
-						*((Pixel32*)&((uint8_t*)d)
+						*((Color32*)&((uint8_t*)d)
 							[xi * 4 + yi*_image.pitch]) = _col;
 					}
 					return;
@@ -354,11 +385,11 @@ namespace pc
 			const Image& _image,
 			vec2 _p,
 			float _r,
-			CircleCode _code,
-			Pixel32 _col)
+			Color32 _col,
+			CircleCode _code)
 		{
-#define LOW_P_PI 3.141593
-#define LOW_P_HPI 1.570797
+#define LOW_P_PI 3.141592
+#define LOW_P_HPI 1.570796
 			int r;
 			int i;
 			int xi;
@@ -390,6 +421,8 @@ namespace pc
 			a = 0;
 			ly = (int)_p.y - _r;
 			lx = (int)_p.x;
+			llx = (int)_p.x;
+			i = 0;
 			if (_p.x + _r < 0.0) return;
 			if (_p.x - _r >= (float) w) return;
 			if (_p.y + _r < 0.0) return;
@@ -404,7 +437,7 @@ namespace pc
 					yi = (int)(_p.y - cos(a) * _r);
 					if (yi != ly)
 					{
-						if (ly > 0)
+						if (ly >= 0)
 						{
 							mp = ly * pitch;
 							xs = lx;
@@ -416,21 +449,21 @@ namespace pc
 								offset = xs * 4 + mp;
 								while (xs <= xe)
 								{
-									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									*((Color32*)&((uint8_t*)d)[offset]) = _col;
 									offset += 4;
 									xs++;
 								}
 							}
-							xs = ox;
+							xs = olx;
 							xe = llx;
 							if ((xe > 0) && (xs < w))
 							{
 								xs = xs < 0 ? 0 : xs;
 								xe = xe >= w ? w - 1 : xe;
-								offset = xs * 4 + ly * mp;
+								offset = xs * 4 + mp;
 								while (xs <= xe)
 								{
-									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									*((Color32*)&((uint8_t*)d)[offset]) = _col;
 									offset += 4;
 									xs++;
 								}
@@ -456,7 +489,7 @@ namespace pc
 					yi = (int)(_p.y - cos(a) * _r);
 					if (yi != ly)
 					{
-						if (ly > 0)
+						if (ly >= 0)
 						{
 							mp = ly * pitch;
 							xs = ox;
@@ -468,21 +501,21 @@ namespace pc
 								offset = xs * 4 + mp;
 								while (xs <= xe)
 								{
-									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									*((Color32*)&((uint8_t*)d)[offset]) = _col;
 									offset += 4;
 									xs++;
 								}
 							}
 							xs = llx;
-							xe = ox;
+							xe = olx;
 							if ((xe > 0) && (xs < w))
 							{
 								xs = xs < 0 ? 0 : xs;
 								xe = xe >= w ? w - 1 : xe;
-								offset = xs * 4 + ly * mp;
+								offset = xs * 4 + mp;
 								while (xs <= xe)
 								{
-									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									*((Color32*)&((uint8_t*)d)[offset]) = _col;
 									offset += 4;
 									xs++;
 								}
@@ -510,7 +543,7 @@ namespace pc
 					yi = (int)(_p.y - cos(a) * _r);
 					if (yi != ly)
 					{
-						if (ly > 0)
+						if (ly >= 0)
 						{
 							mp = ly * pitch;
 							xs = olx;
@@ -522,7 +555,7 @@ namespace pc
 								offset = xs * 4 + mp;
 								while (xs <= xe)
 								{
-									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									*((Color32*)&((uint8_t*)d)[offset]) = _col;
 									offset += 4;
 									xs++;
 								}
@@ -547,7 +580,7 @@ namespace pc
 					yi = (int)(_p.y - cos(a) * _r);
 					if (yi != ly)
 					{
-						if (ly > 0)
+						if (ly >= 0)
 						{
 							mp = ly * pitch;
 							xs = llx;
@@ -559,7 +592,7 @@ namespace pc
 								offset = xs * 4 + mp;
 								while (xs <= xe)
 								{
-									*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+									*((Color32*)&((uint8_t*)d)[offset]) = _col;
 									offset += 4;
 									xs++;
 								}
@@ -579,14 +612,15 @@ namespace pc
 			}
 			xs = llx;
 			xe = lx;
+			mp = ly * pitch;
 			if ((xe > 0) && (xs < w))
 			{
 				xs = xs < 0 ? 0 : xs;
 				xe = xe >= w ? w - 1 : xe;
-				offset = xs * 4 + ly * mp;
+				offset = xs * 4 + mp;
 				while (xs <= xe)
 				{
-					*((Pixel32*)&((uint8_t*)d)[offset]) = _col;
+					*((Color32*)&((uint8_t*)d)[offset]) = _col;
 					offset += 4;
 					xs++;
 				}
@@ -598,8 +632,8 @@ namespace pc
 			vec2 _p,
 			Image& _src,
 			MethodCode _method,
-			ivec2 _src_s,
-			ivec2 _src_e,
+			vec2 _src_s,
+			vec2 _src_e,
 			uint8_t _alpha)
 		{
 			SDL_Rect source_r;
@@ -634,31 +668,59 @@ namespace pc
 			}
 			else
 			{
-				source_r.x = _src_e.x;
-				source_r.y = _src_e.y;
-				source_r.w = abs(_src_e.x - _src_s.x) + 1;
-				source_r.h = abs(_src_e.y - _src_s.y) + 1;
+				source_r.x = (int) _src_e.x;
+				source_r.y = (int) _src_e.y;
+				source_r.w = (int) abs(_src_e.x - _src_s.x) + 1;
+				source_r.h = (int) abs(_src_e.y - _src_s.y) + 1;
 			}
 			dest_r.x = (int)_p.x;
 			dest_r.y = (int)_p.y;
 			dest_r.w = source_r.w;
 			dest_r.h = source_r.h;
-			SDL_BlitSurface(_dest.surface, &dest_r, _src.surface, &source_r);
+			SDL_BlitSurface(_src.surface, &source_r, _dest.surface, &dest_r);
 		}
 		void putf(
 			Image& _dest,
 			vec2 _p,
 			Image& _src,
 			MethodCode _method,
-			ivec2 _src_s,
-			ivec2 _src_e,
+			vec2 _src_s,
+			vec2 _src_e,
 			uint8_t _alpha)
 		{
+			vec2 c_tl;
+			vec2 c_br;
+			vec2 d_p;
+			vec2 d_s;
+			void* src_pixels;
+			void* dst_pixels;
+			int w;
+			int h;
 			if (_dest.empty() || _src.empty())
 			{
 				throw std::runtime_error("No image.");
 			}
-			// 
+			w = _src.width;
+			h = _src.height;
+			if (_src_s.x < 0)
+			{
+				_src_s = vec2(0, 0);
+				_src_e = vec2(w, h);
+				d_s = vec2(w, h);
+			}
+			else
+			{
+				d_s = _src_e - _src_s;
+			}
+			w = _dest.width;
+			h = _dest.height;
+			if (!any_clip(_p, d_s, vec2(0, 0), vec2(w, h), d_p, c_tl, c_br))
+			{
+				return;
+			}
+			src_pixels = _src.get_raw_data();
+			dst_pixels = _dest.data;
+
 
 
 		}
@@ -666,7 +728,7 @@ namespace pc
 			Image& _dest,
 			vec2 _p,
 			std::string _text,
-			Pixel32 _col)
+			Color32 _col)
 		{
 
 		}

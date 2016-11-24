@@ -7,7 +7,7 @@
 
 namespace pc
 {
-	CALL_ON_TERMINATION(SDL_Quit)
+	CALL_ON_TERMINATION(CONTEXT_CPP, SDL_Quit);
 
 	bool has_init_sdl = false;
 
@@ -77,7 +77,8 @@ namespace pc
 	{
 		SDL_Surface* scn;
 		scn = SDL_GetWindowSurface(window);
-		SDL_BlitSurface(scn, nullptr, _img.surface, nullptr);
+		SDL_BlitSurface(_img.surface, nullptr, scn, nullptr);
+		SDL_UpdateWindowSurface(window);
 	}
 	void Context::fullscreen_changed(bool _fullscreen)
 	{

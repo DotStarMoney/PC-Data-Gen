@@ -1,11 +1,11 @@
 #pragma once
 #include <stdint.h>
 
-union Pixel32
+union Color32
 {
-	Pixel32() {}
-	Pixel32(uint32_t _v) { value = _v; }
-	Pixel32(
+	Color32() {}
+	Color32(uint32_t _v) { value = _v; }
+	Color32(
 		unsigned char _r,
 		unsigned char _g,
 		unsigned char _b,
@@ -15,6 +15,16 @@ union Pixel32
 		g = _g;
 		b = _b;
 		a = _a;
+	}
+	Color32(
+		unsigned char _r,
+		unsigned char _g,
+		unsigned char _b)
+	{
+		r = _r;
+		g = _g;
+		b = _b;
+		a = 0xff;
 	}
 	void operator=(const uint32_t _val) { value = _val; }
 	struct

@@ -8,6 +8,7 @@ set(SRC_FILES
 	context.cpp
 	image.cpp
 	gfxfunctions.cpp
+	utility.cpp
 		
 	PARENT_SCOPE)
 
